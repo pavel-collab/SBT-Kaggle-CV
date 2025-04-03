@@ -79,6 +79,7 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     
 for model_name, model_class in models.items():
+    logger.info(f"Start to train model {model_name}")
     model = model_class(n_classes=n_classes)
     try:
         model_train_result = train_model(model,

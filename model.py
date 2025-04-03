@@ -6,7 +6,11 @@ class ClassificationHead(nn.Module):
         super(ClassificationHead, self).__init__()
         
         self.classification_head = nn.Sequential(
-            nn.Linear(in_features, out_features)
+            nn.Linear(in_features, out_features),
+            # nn.Linear(in_features, 128),
+            # nn.ReLU(),
+            # nn.Dropout(p=0.3),
+            # nn.Linear(128, out_features)
         )
         
     def forward(self, x):
