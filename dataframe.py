@@ -4,7 +4,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 
 class CustomDataset(Dataset):
-    def __init__(self, csv_file, images_dir, classes: list, transform=None):
+    def __init__(self, csv_file, images_dir, classes: list, transform=None, is_test=False):
         """
         Инициализация кастомного датафрейма.
 
@@ -16,6 +16,7 @@ class CustomDataset(Dataset):
         self.images_dir = images_dir
         self.transform = transform
         self.classes = classes
+        self.is_test = is_test
 
     def __len__(self):
         """Возвращает количество изображений в наборе данных."""
@@ -30,7 +31,9 @@ class CustomDataset(Dataset):
         """
         # Получаем данные из датафрейма
         img_name = os.path.join(self.images_dir, self.dataframe.iloc[idx, 0]) + ".jpg"  # Предполагается, что имя изображения в первом столбце
-        label = int(self.dataframe.iloc[idx,1:].values.argmax()) # Предполагается, что метки закодированы one hot с первой позиции
+        
+        if not self.is_test: 
+            label = int(self.dataframe.iloc[idx,1:].values.argmax()) # Предполагается, что метки закодированы one hot с первой позиции
         
         # Загружаем изображение
         image = Image.open(img_name).convert('RGB')
@@ -39,29 +42,8 @@ class CustomDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        return (image, label)
-
-'''
-Пример использования
-
-# Параметры
-csv_file = 'path/to/your/train.csv'
-images_dir = 'path/to/your/train/images'
-transform = transforms.Compose([
-    transforms.Resize((128, 128)),  # Измените размер изображений
-    transforms.ToTensor(),            # Преобразование в тензор
-])
-
-# Создание кастомного датафрейма
-dataset = CustomDataset(csv_file, images_dir, transform)
-
-# Создание DataLoader
-from torch.utils.data import DataLoader
-data_loader = DataLoader(dataset, batch_size=32, shuffle=True)
-
-# Итерация по DataLoader
-for batch_idx, (images, labels) in enumerate(data_loader):
-    print(f'Batch {batch_idx + 1}:')
-    print(f'  Images batch shape: {images.shape}')
-    print(f'  Labels: {labels}')
-'''
+        if not self.is_test:
+            return (image, label)
+        else:
+            return image
+        
