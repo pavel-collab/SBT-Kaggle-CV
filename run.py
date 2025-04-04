@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 import logging
 
 from classification_head import ClassificationHead1, ClassificationHead2, ClassificationHead3, ClassificationHead4, ClassificationHead5
-from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3, CustomResNet50
+from model import CustomResNet, CustomResNet50, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3, CustomResNet101, CustomMobileNetV3Large, CustomConvNeXtTiny, CustomEfficientNetB0
 from utils import train_model, plot_train_proces, TrainModelResult
 
 import logger_config
@@ -44,11 +44,15 @@ models = {
     "resnet50": CustomResNet50,
     "alexnet": CustomAlexNet,
     "googlenet": CustomGoogLeNet,
-    "mobilenet_v3": CustomMobileNetV3
+    "mobilenet_v3": CustomMobileNetV3,
+    # "resnet101": CustomResNet101,
+    # "mobilenet_large": CustomMobileNetV3Large,
+    # "convnexttiny": CustomConvNeXtTiny,
+    # "efficientnetb0": CustomEfficientNetB0
 }
 
 classification_heads = {
-    "head_1": ClassificationHead1,
+    # "head_1": ClassificationHead1,
     "head_2": ClassificationHead2,
     "head_3": ClassificationHead3,
     "head_4": ClassificationHead4,
@@ -56,7 +60,7 @@ classification_heads = {
 }
 
 # число эпох
-num_epochs = 70
+num_epochs = 45
 learning_rate = 0.0001
 
 val_transform = transforms.Compose([

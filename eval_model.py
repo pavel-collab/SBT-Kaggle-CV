@@ -6,6 +6,7 @@ import torchvision.transforms as transforms
 from utils import evaluate_model, plot_confusion_matrix
 from torch.utils.data import DataLoader
 from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3
+from classification_head import ClassificationHead1, ClassificationHead2, ClassificationHead3, ClassificationHead4, ClassificationHead5
 
 #TODO: we can see this constants in different files here, we can move it to the separate file and import in each file, where we need it
 classes_list = ['healthy', 'multiple_diseases', 'rust', 'scab']
@@ -18,6 +19,14 @@ models = {
     "alexnet": CustomAlexNet,
     "googlenet": CustomGoogLeNet,
     "mobilenet_v3": CustomMobileNetV3
+}
+
+classification_heads = {
+    "head_1": ClassificationHead1,
+    "head_2": ClassificationHead2,
+    "head_3": ClassificationHead3,
+    "head_4": ClassificationHead4,
+    "head_5": ClassificationHead5,
 }
 
 parser = argparse.ArgumentParser()
@@ -39,6 +48,12 @@ model_name = extract_model_name(model_file_path.name)
 assert(model_name is not None)
 assert(model_name in models.keys())
 
+# check if we use custom classification head
+if 'head' in model_file_path.parent.name:
+    head_name = model_file_path.parent.name
+else:
+    head_name = None
+
 # детектируем девайс
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -56,7 +71,10 @@ val_dataset = CustomDataset(validation_csv_file,
 
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
-model = models[model_name](n_classes=len(classes_list))
+if head_name is None:
+    model = models[model_name](n_classes=len(classes_list))
+else:
+    model = models(model_name)(n_classes=len(classes_list), classification_head=classification_heads[head_name])
 assert(model is not None)
 
 model.load_state_dict(torch.load(model_file_path.absolute()))
