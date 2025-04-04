@@ -40,8 +40,6 @@ models = {
     "resnet": CustomResNet,
     "alexnet": CustomAlexNet,
     "googlenet": CustomGoogLeNet,
-    "convnext": CustomConvNeXt,
-    "efficientnet": CustomEfficientNet,
     "mobilenet_v3": CustomMobileNetV3
 }
 
