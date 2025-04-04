@@ -5,7 +5,7 @@ from dataframe import CustomDataset
 import torchvision.transforms as transforms
 from utils import evaluate_model, plot_confusion_matrix
 from torch.utils.data import DataLoader
-from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3
+from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3, CustomResNet50
 
 #TODO: we can see this constants in different files here, we can move it to the separate file and import in each file, where we need it
 classes_list = ['healthy', 'multiple_diseases', 'rust', 'scab']
@@ -17,7 +17,8 @@ models = {
     "resnet": CustomResNet,
     "alexnet": CustomAlexNet,
     "googlenet": CustomGoogLeNet,
-    "mobilenet_v3": CustomMobileNetV3
+    "mobilenet_v3": CustomMobileNetV3,
+    "resnet50": CustomResNet50
 }
 
 parser = argparse.ArgumentParser()

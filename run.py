@@ -36,7 +36,7 @@ batch_size = 64
 
 n_classes = len(classes_list)
 
-class_weights = [0.8654891304347826, 5.137096774193548, 0.7288329519450801, 0.7825552825552825]
+class_weights = torch.tensor([0.8654891304347826, 5.137096774193548, 0.7288329519450801, 0.7825552825552825], dtype=torch.float32)
 
 models = {
     # "resnet": CustomResNet,
@@ -91,7 +91,7 @@ for model_name, model_class in models.items():
                                          learning_rate,
                                          train_loader,
                                          val_loader,
-                                        #  class_weights=class_weights
+                                         class_weights=class_weights
                                          )
         plot_train_proces(num_epochs,
                           model_train_result.train_losses,
