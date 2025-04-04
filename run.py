@@ -6,6 +6,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import logging
 
+from classification_head import ClassificationHead1, ClassificationHead2, ClassificationHead3, ClassificationHead4, ClassificationHead5
 from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3, CustomResNet50
 from utils import train_model, plot_train_proces, TrainModelResult
 
@@ -39,11 +40,19 @@ n_classes = len(classes_list)
 class_weights = [0.8654891304347826, 5.137096774193548, 0.7288329519450801, 0.7825552825552825]
 
 models = {
-    # "resnet": CustomResNet,
+    "resnet": CustomResNet,
     "resnet50": CustomResNet50,
-    # "alexnet": CustomAlexNet,
-    # "googlenet": CustomGoogLeNet,
-    # "mobilenet_v3": CustomMobileNetV3
+    "alexnet": CustomAlexNet,
+    "googlenet": CustomGoogLeNet,
+    "mobilenet_v3": CustomMobileNetV3
+}
+
+classification_heads = {
+    "head_1": ClassificationHead1,
+    "head_2": ClassificationHead2,
+    "head_3": ClassificationHead3,
+    "head_4": ClassificationHead4,
+    "head_5": ClassificationHead5,
 }
 
 # число эпох
@@ -81,24 +90,27 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     
 for model_name, model_class in models.items():
-    logger.info(f"Start to train model {model_name}")
-    model = model_class(n_classes=n_classes)
-    try:
-        model_train_result = train_model(model,
-                                         model_name,
-                                         device,
-                                         num_epochs,
-                                         learning_rate,
-                                         train_loader,
-                                         val_loader,
-                                        #  class_weights=class_weights
-                                         )
-        plot_train_proces(num_epochs,
-                          model_train_result.train_losses,
-                          model_train_result.val_losses,
-                          model_train_result.train_accuracies,
-                          model_train_result.val_accuracies,
-                          model_name)
-    except Exception as ex:
-        logger.error(f"During training model {model_name} was caught exception {ex}")
-        continue
+    for class_head_name, cl_head in classification_heads.items():
+        logger.info(f"Start to train model {model_name} with classification head {cl_head}")
+        model = model_class(classification_head=cl_head, n_classes=n_classes)
+        try:
+            model_train_result = train_model(model,
+                                            model_name,
+                                            device,
+                                            num_epochs,
+                                            learning_rate,
+                                            train_loader,
+                                            val_loader,
+                                            classification_head_name=class_head_name,
+                                            #  class_weights=class_weights
+                                            )
+            plot_train_proces(num_epochs,
+                            model_train_result.train_losses,
+                            model_train_result.val_losses,
+                            model_train_result.train_accuracies,
+                            model_train_result.val_accuracies,
+                            model_name,
+                            classification_head_name=class_head_name)
+        except Exception as ex:
+            logger.error(f"During training model {model_name} was caught exception {ex}")
+            continue

@@ -7,6 +7,8 @@ import torch.optim as optim
 from sklearn.metrics import confusion_matrix, classification_report, f1_score
 from tqdm import tqdm
 import logging
+import os
+from pathlib import Path
 
 import logger_config
 
@@ -72,6 +74,7 @@ def train_model(model,
                 learning_rate: float, 
                 train_loader, 
                 val_loader,
+                classification_head_name=None,
                 class_weights=None) -> TrainModelResult:
     # Определим функцию потерь и оптимизатор
     if class_weights is None:
@@ -152,11 +155,20 @@ def train_model(model,
         # Сохранение лучшей модели на основе валидационной точности
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
-            torch.save(model.state_dict(), f"{MODEL_SAVE_DIR_PATH}/best_model_{model_name}.pth")
+            if classification_head_name is None:
+                torch.save(model.state_dict(), f"{MODEL_SAVE_DIR_PATH}/best_model_{model_name}.pth")
+            else:
+                torch.save(model.state_dict(), f"{MODEL_SAVE_DIR_PATH}/best_model_{model_name}_{classification_head_name}.pth")
             logger.info('Saved best model!')
         
         # Сохранение последней актуальной модели
-        torch.save(model.state_dict(), f"{MODEL_SAVE_DIR_PATH}/last_model_{model_name}.pth")
+        if classification_head_name is None:
+            torch.save(model.state_dict(), f"{MODEL_SAVE_DIR_PATH}/last_model_{model_name}.pth")
+        else:
+            path_to_save = Path(f"{MODEL_SAVE_DIR_PATH}/{classification_head_name}")
+            if not path_to_save.exists():
+                os.mkdir(path_to_save.absolute())
+            torch.save(model.state_dict(), f"{path_to_save.absolute()}/last_model_{model_name}.pth")
 
     logger.info(f"Training and validation complete!")
     
@@ -170,7 +182,8 @@ def plot_train_proces(num_epochs: int,
                       val_losses,
                       train_accuracies,
                       val_accuracies,
-                      model_name: str):
+                      model_name: str,
+                      classification_head_name=None):
     # Построим графики
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
@@ -189,4 +202,7 @@ def plot_train_proces(num_epochs: int,
     plt.title(f"Accuracy vs. Epoch ({model_name})")
     plt.legend()
 
-    plt.savefig(f"{IMAGE_DIR_PATH}/{model_name}.jpg")
+    if classification_head_name is None:
+        plt.savefig(f"{IMAGE_DIR_PATH}/{model_name}.jpg")
+    else:
+        plt.savefig(f"{IMAGE_DIR_PATH}/{model_name}_{classification_head_name}.jpg")
