@@ -5,7 +5,7 @@ from dataframe import CustomDataset
 import torchvision.transforms as transforms
 from utils import evaluate_model, plot_confusion_matrix
 from torch.utils.data import DataLoader
-from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomConvNeXt, CustomEfficientNet, CustomMobileNetV3
+from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3
 
 #TODO: we can see this constants in different files here, we can move it to the separate file and import in each file, where we need it
 classes_list = ['healthy', 'multiple_diseases', 'rust', 'scab']
@@ -17,8 +17,6 @@ models = {
     "resnet": CustomResNet,
     "alexnet": CustomAlexNet,
     "googlenet": CustomGoogLeNet,
-    "convnext": CustomConvNeXt,
-    "efficientnet": CustomEfficientNet,
     "mobilenet_v3": CustomMobileNetV3
 }
 
@@ -28,9 +26,9 @@ args = parser.parse_args()
 
 def extract_model_name(model_file_name: str):
     if 'best_model' in model_file_name:
-        model_file_path.removeprefix("best_model").removesuffix(".phf")
+        return model_file_name.removeprefix("best_model_").removesuffix(".pth")
     elif 'last_model' in model_file_name:
-        model_file_path.removeprefix("last_model").removesuffix(".phf")
+        return model_file_name.removeprefix("last_model_").removesuffix(".pth")
     else:
         return None
     
@@ -58,7 +56,7 @@ val_dataset = CustomDataset(validation_csv_file,
 
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
-model = models[model_name]
+model = models[model_name](n_classes=len(classes_list))
 assert(model is not None)
 
 model.load_state_dict(torch.load(model_file_path.absolute()))

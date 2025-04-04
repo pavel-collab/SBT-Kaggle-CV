@@ -6,7 +6,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import logging
 
-from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomConvNeXt, CustomEfficientNet, CustomMobileNetV3
+from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3
 from utils import train_model, plot_train_proces, TrainModelResult
 
 import logger_config

@@ -7,6 +7,7 @@ class ClassificationHead(nn.Module):
         
         self.classification_head = nn.Sequential(
             # nn.Linear(in_features, out_features),
+
             nn.Linear(in_features, 128),
             nn.ReLU(),
             nn.Dropout(p=0.3),
