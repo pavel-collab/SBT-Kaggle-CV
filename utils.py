@@ -47,15 +47,23 @@ def evaluate_model(model, dataloader, device):
     return cm, report, accuracy, weighted_f1
 
 # Функция для построения графика матрицы ошибок
-def plot_confusion_matrix(cm, classes):
+def plot_confusion_matrix(cm, classes, model_name=None, save_file_path=None):
     with plt.style.context('default'):  
         plt.figure(figsize=(5, 4))
         sns.heatmap(cm, annot=True, fmt='g', cmap='Blues', cbar=False,
                     xticklabels=classes, yticklabels=classes)
         plt.xlabel('Predicted labels')
         plt.ylabel('True labels')
-        plt.title('Confusion Matrix')
-        plt.show()
+        if model_name is not None:
+            plt.title(f"Confusion Matrix for model {model_name}")
+        else:
+            plt.title("Confusion Matrix")
+        
+        if save_file_path is None:
+            plt.show()
+        else:
+            assert(model_name is not None)
+            plt.savefig(f"{save_file_path}/confusion_matrix_{model_name}.jpg")
         
 def train_model(model, 
                 model_name: str, 
