@@ -80,7 +80,7 @@ def train_model(model,
     if class_weights is None:
         criterion = nn.CrossEntropyLoss()
     else:
-        criterion = nn.CrossEntropyLoss(weight=class_weights)
+        criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.5)
 
@@ -109,7 +109,7 @@ def train_model(model,
             loss = criterion(outputs, labels) # получаем выход функции потерь
             loss.backward() # прогоняем градиенты обратно по графу вычиялений от хвоста сети к голове
             
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) #! добавить клипинк градиентов для предотвращения взрыва градиентов
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) #! добавить клипинк для предотвращения взрыва градиентов
             
             optimizer.step() # делаем шаг градиентного спуска (обновляем веса)
             
@@ -158,7 +158,10 @@ def train_model(model,
             if classification_head_name is None:
                 torch.save(model.state_dict(), f"{MODEL_SAVE_DIR_PATH}/best_model_{model_name}.pth")
             else:
-                torch.save(model.state_dict(), f"{MODEL_SAVE_DIR_PATH}/best_model_{model_name}_{classification_head_name}.pth")
+                path_to_save = Path(f"{MODEL_SAVE_DIR_PATH}/{classification_head_name}")
+                if not path_to_save.exists():
+                    os.mkdir(path_to_save.absolute())
+                torch.save(model.state_dict(), f"{path_to_save.absolute()}/best_model_{model_name}.pth")
             logger.info('Saved best model!')
         
         # Сохранение последней актуальной модели

@@ -37,7 +37,7 @@ batch_size = 64
 
 n_classes = len(classes_list)
 
-class_weights = [0.8654891304347826, 5.137096774193548, 0.7288329519450801, 0.7825552825552825]
+class_weights = torch.tensor([0.8654891304347826, 5.137096774193548, 0.7288329519450801, 0.7825552825552825])
 
 models = {
     "resnet": CustomResNet,
@@ -95,7 +95,7 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     
 for model_name, model_class in models.items():
     for class_head_name, cl_head in classification_heads.items():
-        logger.info(f"Start to train model {model_name} with classification head {cl_head}")
+        logger.info(f"Start to train model {model_name} with classification head {class_head_name}")
         model = model_class(classification_head=cl_head, n_classes=n_classes)
         try:
             model_train_result = train_model(model,
@@ -106,7 +106,7 @@ for model_name, model_class in models.items():
                                             train_loader,
                                             val_loader,
                                             classification_head_name=class_head_name,
-                                            #  class_weights=class_weights
+                                             class_weights=class_weights
                                             )
             plot_train_proces(num_epochs,
                             model_train_result.train_losses,
