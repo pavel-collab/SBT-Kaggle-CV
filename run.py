@@ -45,7 +45,7 @@ models = {
 
 # число эпох
 num_epochs = 70
-learning_rate = 0.0005
+learning_rate = 0.0001
 
 val_transform = transforms.Compose([
     transforms.Resize(256),
@@ -61,9 +61,10 @@ val_dataset = CustomDataset(validation_csv_file,
 
 train_transform = transforms.Compose([
     transforms.Resize(256),
-    transforms.RandomRotation(10),
+    transforms.RandomRotation(15),
     transforms.CenterCrop(224),
     transforms.RandomHorizontalFlip(0.5),  # Добавим вертикальное отражение
+    transforms.RandomVerticalFlip(0.5),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # специальные значение нормализации для resnet
 ])

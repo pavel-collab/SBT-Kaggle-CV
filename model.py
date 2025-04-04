@@ -10,7 +10,7 @@ class ClassificationHead(nn.Module):
 
             nn.Linear(in_features, 128),
             nn.ReLU(),
-            nn.Dropout(p=0.3),
+            nn.Dropout(p=0.1),
             nn.Linear(128, out_features)
         )
         

@@ -74,7 +74,8 @@ def train_model(model,
                 val_loader) -> TrainModelResult:
     # Определим функцию потерь и оптимизатор
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.5)
 
     train_losses = []
     train_accuracies = []
@@ -100,6 +101,9 @@ def train_model(model,
 
             loss = criterion(outputs, labels) # получаем выход функции потерь
             loss.backward() # прогоняем градиенты обратно по графу вычиялений от хвоста сети к голове
+            
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) #! добавить клипинк градиентов для предотвращения взрыва градиентов
+            
             optimizer.step() # делаем шаг градиентного спуска (обновляем веса)
             
             running_loss += loss.item()
@@ -138,6 +142,8 @@ def train_model(model,
         logger.info(f'Epoch [{epoch+1}/{num_epochs}], '
                     f'Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f}, '
                     f'Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}')
+    
+        scheduler.step(val_loss) # добавляем уменьшене learning rate
     
         # Сохранение лучшей модели на основе валидационной точности
         if val_accuracy > best_val_accuracy:
