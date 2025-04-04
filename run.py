@@ -6,7 +6,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import logging
 
-from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3
+from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3, CustomResNet50
 from utils import train_model, plot_train_proces, TrainModelResult
 
 import logger_config
@@ -36,11 +36,14 @@ batch_size = 64
 
 n_classes = len(classes_list)
 
+class_weights = [0.8654891304347826, 5.137096774193548, 0.7288329519450801, 0.7825552825552825]
+
 models = {
-    "resnet": CustomResNet,
-    "alexnet": CustomAlexNet,
-    "googlenet": CustomGoogLeNet,
-    "mobilenet_v3": CustomMobileNetV3
+    # "resnet": CustomResNet,
+    "resnet50": CustomResNet50,
+    # "alexnet": CustomAlexNet,
+    # "googlenet": CustomGoogLeNet,
+    # "mobilenet_v3": CustomMobileNetV3
 }
 
 # число эпох
@@ -87,7 +90,9 @@ for model_name, model_class in models.items():
                                          num_epochs,
                                          learning_rate,
                                          train_loader,
-                                         val_loader)
+                                         val_loader,
+                                        #  class_weights=class_weights
+                                         )
         plot_train_proces(num_epochs,
                           model_train_result.train_losses,
                           model_train_result.val_losses,

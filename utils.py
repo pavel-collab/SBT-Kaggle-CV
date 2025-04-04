@@ -71,9 +71,13 @@ def train_model(model,
                 num_epochs: int, 
                 learning_rate: float, 
                 train_loader, 
-                val_loader) -> TrainModelResult:
+                val_loader,
+                class_weights=None) -> TrainModelResult:
     # Определим функцию потерь и оптимизатор
-    criterion = nn.CrossEntropyLoss()
+    if class_weights is None:
+        criterion = nn.CrossEntropyLoss()
+    else:
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.5)
 

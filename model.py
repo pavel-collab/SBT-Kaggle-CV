@@ -8,9 +8,30 @@ class ClassificationHead(nn.Module):
         self.classification_head = nn.Sequential(
             # nn.Linear(in_features, out_features),
 
-            nn.Linear(in_features, 128),
+            # nn.Linear(in_features, 128),
+            # nn.ReLU(),
+            # nn.Dropout(p=0.1),
+            # nn.Linear(128, out_features)
+            
+            # nn.Linear(in_features, 128),
+            # nn.ReLU(),
+            # nn.Dropout(p=0.3),
+            # nn.Linear(128, out_features)
+            
+            # nn.Linear(in_features, 256),
+            # nn.ReLU(),
+            # nn.Dropout(p=0.1),
+            # nn.Linear(256, 128),
+            # nn.ReLU(),
+            # nn.Dropout(p=0.1),
+            # nn.Linear(128, out_features)
+            
+            nn.Linear(in_features, 256),
             nn.ReLU(),
-            nn.Dropout(p=0.1),
+            nn.Dropout(p=0.3),
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.Dropout(p=0.3),
             nn.Linear(128, out_features)
         )
         
@@ -44,6 +65,17 @@ class CustomResNet(nn.Module):
         super(CustomResNet, self).__init__()
 
         self.backbone = models.resnet18(pretrained=pretrained)
+        in_features = self.backbone.fc.in_features
+        self.backbone.fc = ClassificationHead(in_features, n_classes)
+
+    def forward(self, x):
+        return self.backbone(x)
+    
+class CustomResNet50(nn.Module):
+    def __init__(self, n_classes: int, pretrained=True):
+        super(CustomResNet50, self).__init__()
+
+        self.backbone = models.resnet50(pretrained=pretrained)
         in_features = self.backbone.fc.in_features
         self.backbone.fc = ClassificationHead(in_features, n_classes)
 
