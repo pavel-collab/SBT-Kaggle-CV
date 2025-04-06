@@ -5,7 +5,7 @@ from dataframe import CustomDataset
 import torchvision.transforms as transforms
 from utils import evaluate_model, plot_confusion_matrix
 from torch.utils.data import DataLoader
-from model import CustomResNet, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3
+from model import CustomResNet, CustomResNet50, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3, CustomResNet101, CustomMobileNetV3Large, CustomConvNeXtTiny, CustomEfficientNetB0
 from classification_head import ClassificationHead1, ClassificationHead2, ClassificationHead3, ClassificationHead4, ClassificationHead5
 
 #TODO: we can see this constants in different files here, we can move it to the separate file and import in each file, where we need it
@@ -16,13 +16,18 @@ validation_images_dir = './data/validation/images'
 
 models = {
     "resnet": CustomResNet,
+    "resnet50": CustomResNet50,
     "alexnet": CustomAlexNet,
     "googlenet": CustomGoogLeNet,
-    "mobilenet_v3": CustomMobileNetV3
+    "mobilenet_v3": CustomMobileNetV3,
+    "resnet101": CustomResNet101,
+    "mobilenet_large": CustomMobileNetV3Large,
+    "convnexttiny": CustomConvNeXtTiny,
+    "efficientnetb0": CustomEfficientNetB0
 }
 
 classification_heads = {
-    "head_1": ClassificationHead1,
+    # "head_1": ClassificationHead1,
     "head_2": ClassificationHead2,
     "head_3": ClassificationHead3,
     "head_4": ClassificationHead4,
@@ -31,7 +36,13 @@ classification_heads = {
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-m', '--model_path', help='set a path to the model that we want to evaluate')
+parser.add_argument('-o', '--output', help='set a path to the output filename, programm will write a model name and final accuracy')
 args = parser.parse_args()
+
+if args.output is not None and args.output != "":
+    output_file_path = Path(args.output)
+else: 
+    output_file_path = None
 
 def extract_model_name(model_file_name: str):
     if 'best_model' in model_file_name:
@@ -74,7 +85,7 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 if head_name is None:
     model = models[model_name](n_classes=len(classes_list))
 else:
-    model = models(model_name)(n_classes=len(classes_list), classification_head=classification_heads[head_name])
+    model = models[model_name](n_classes=len(classes_list), classification_head=classification_heads[head_name])
 assert(model is not None)
 
 model.load_state_dict(torch.load(model_file_path.absolute()))
@@ -87,5 +98,13 @@ try:
     print(report)
     print(f'Test Accuracy: {accuracy_1:.4f}')
     plot_confusion_matrix(cm, classes=range(len(classes_list)), model_name=model_name, save_file_path='./images/')
+    
+    if output_file_path is not None:
+        file_create = output_file_path.exists()
+        
+        with open(output_file_path.absolute(), 'a') as fd:
+            if not file_create:
+                fd.write("model,accuracy\n")
+            fd.write(f"{model_name}_{head_name},{accuracy_1}\n")
 except Exception as ex:
     print(f"During evaluating model {model_name} we have faced with exception {ex}")

@@ -45,10 +45,10 @@ models = {
     "alexnet": CustomAlexNet,
     "googlenet": CustomGoogLeNet,
     "mobilenet_v3": CustomMobileNetV3,
-    # "resnet101": CustomResNet101,
-    # "mobilenet_large": CustomMobileNetV3Large,
-    # "convnexttiny": CustomConvNeXtTiny,
-    # "efficientnetb0": CustomEfficientNetB0
+    "resnet101": CustomResNet101,
+    "mobilenet_large": CustomMobileNetV3Large,
+    "convnexttiny": CustomConvNeXtTiny,
+    "efficientnetb0": CustomEfficientNetB0
 }
 
 classification_heads = {
@@ -90,8 +90,8 @@ train_dataset = CustomDataset(train_csv_file,
                               classes_list, 
                               train_transform)
 
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=8)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=8)
     
 for model_name, model_class in models.items():
     for class_head_name, cl_head in classification_heads.items():
