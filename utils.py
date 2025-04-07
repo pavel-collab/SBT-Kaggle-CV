@@ -9,6 +9,7 @@ from tqdm import tqdm
 import logging
 import os
 from pathlib import Path
+import re
 
 import logger_config
 
@@ -209,3 +210,21 @@ def plot_train_proces(num_epochs: int,
         plt.savefig(f"{IMAGE_DIR_PATH}/{model_name}.jpg")
     else:
         plt.savefig(f"{IMAGE_DIR_PATH}/{model_name}_{classification_head_name}.jpg")
+
+def last_model_settings(log_file_path: str):
+    pattern = r"Start to train model (\{.*?\}) with classification head (\{.*?\})"
+    
+    last_model_name = None
+    last_class_head_name = None
+
+    with open(log_file_path, 'r') as file:
+        for line in file:
+            match = re.search(pattern, line)
+            if match:
+                last_model_name = match.group(1)  # Извлекаем model_name
+                last_class_head_name = match.group(2)  # Извлекаем class_head_name
+
+    if last_model_name and last_class_head_name:
+        return last_model_name, last_class_head_name
+    else:
+        raise RuntimeError("logfile exists, but there are no records about last models training")

@@ -4,6 +4,8 @@ import os
 DEFAULT_LOG_DIRECTORY = "logs"
 CORE_LOG_FILE = "core.log"
 
+DEFAULT_LOG_PATH = f"{DEFAULT_LOG_DIRECTORY}/{CORE_LOG_FILE}"
+
 def setup_logger():
     if not os.path.exists(DEFAULT_LOG_DIRECTORY):
         try:
