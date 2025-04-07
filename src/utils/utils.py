@@ -10,6 +10,7 @@ import logging
 import os
 from pathlib import Path
 import re
+import torch.nn.functional as F
 
 import utils.logger_config
 
@@ -17,6 +18,19 @@ logger = logging.getLogger(__name__)
 
 MODEL_SAVE_DIR_PATH = './saved_models'
 IMAGE_DIR_PATH = "./images"
+
+class_freq = [0.288854, 0.04866562, 0.34301413, 0.31946625]
+class_smoothing = (1.0 - class_freq).clamp(min=0.05, max=0.2)
+num_classes = 4
+
+def smooth_one_hot(targets, num_classes, smoothing_per_class):
+    # targets: (batch,)
+    smoothed = torch.zeros((targets.size(0), num_classes), device=targets.device)
+    for i, t in enumerate(targets):
+        smooth = smoothing_per_class[t]
+        smoothed[i].fill_(smooth / (num_classes - 1))
+        smoothed[i, t] = 1.0 - smooth
+    return smoothed
 
 class TrainModelResult():
     def __init__(self, 
@@ -145,6 +159,7 @@ def train_model(model,
                 classification_head_name=None,
                 class_weights=None) -> TrainModelResult:
     # Определим функцию потерь и оптимизатор
+    criterion = nn.KLDivLoss(reduction='batchmean')
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.5)
 
@@ -163,22 +178,18 @@ def train_model(model,
         running_loss = 0.0 # loss в рамках 1 прохода по датасету (одной эпохи)
         correct = 0
         total = 0
-        
-        # динамическое сглаживание
-        smoothing = 0.2 * (1 - epoch / num_epochs)
-        
-        if class_weights is None:
-            criterion = nn.CrossEntropyLoss(label_smoothing=smoothing)
-        else:
-            criterion = nn.CrossEntropyLoss(weight=class_weights.to(device), label_smoothing=smoothing)
 
         for images, labels in tqdm(train_loader):
             images, labels = images.to(device), labels.to(device)
 
             optimizer.zero_grad() # зануляем градиенты перед обработкой очередного батча
-            outputs = model(images) # получаем предсказания модели
+            logits = model(images) # получаем предсказания модели
 
-            loss = criterion(outputs, labels) # получаем выход функции потерь
+            log_probs = F.log_softmax(logits, dim=1)
+            
+            targets_smoothed = smooth_one_hot(labels, num_classes, class_smoothing)
+            loss = criterion(log_probs, targets_smoothed)
+
             loss.backward() # прогоняем градиенты обратно по графу вычиялений от хвоста сети к голове
             
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) #! добавить клипинк для предотвращения взрыва градиентов

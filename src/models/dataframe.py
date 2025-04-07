@@ -43,6 +43,7 @@ class CustomDataset(Dataset):
 
         # Применяем преобразования, если они есть
         if self.transform:
+            # image = self.transform(image)
             image = self.transform(image=img)["image"]
 
         if not self.is_test:
