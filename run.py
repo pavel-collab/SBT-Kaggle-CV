@@ -15,7 +15,7 @@ from utils import train_model, plot_train_proces, last_model_settings
 import torch.profiler as profiler
 
 import logger_config
-from logger_config import DEFAULT_LOG_DIRECTORY
+from logger_config import DEFAULT_LOG_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +103,7 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, nu
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=8)
     
 if args.resume:
-    logfile_path = Path(DEFAULT_LOG_DIRECTORY)
+    logfile_path = Path(DEFAULT_LOG_PATH)
     assert(logfile_path.exists())
 
     last_model_name, last_head_name = last_model_settings(logfile_path.absolute())

@@ -212,7 +212,7 @@ def plot_train_proces(num_epochs: int,
         plt.savefig(f"{IMAGE_DIR_PATH}/{model_name}_{classification_head_name}.jpg")
 
 def last_model_settings(log_file_path: str):
-    pattern = r"Start to train model (\{.*?\}) with classification head (\{.*?\})"
+    pattern = r"[\d,-_:\s*]+ - INFO - Start to train model ([\d,\w,_]+) with classification head ([\d,\w,_]+)"
     
     last_model_name = None
     last_class_head_name = None
