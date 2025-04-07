@@ -107,6 +107,7 @@ if args.resume:
     assert(logfile_path.exists())
 
     last_model_name, last_head_name = last_model_settings(logfile_path.absolute())
+    logger.info(f"Resume model training from {last_model_name} and {last_head_name}")
 else:
     last_model_name, last_head_name = models.keys()[0], classification_heads.keys()[0]
 
