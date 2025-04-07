@@ -145,10 +145,6 @@ def train_model(model,
                 classification_head_name=None,
                 class_weights=None) -> TrainModelResult:
     # Определим функцию потерь и оптимизатор
-    if class_weights is None:
-        criterion = nn.CrossEntropyLoss()
-    else:
-        criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.5)
 
@@ -167,6 +163,14 @@ def train_model(model,
         running_loss = 0.0 # loss в рамках 1 прохода по датасету (одной эпохи)
         correct = 0
         total = 0
+        
+        # динамическое сглаживание
+        smoothing = 0.2 * (1 - epoch / num_epochs)
+        
+        if class_weights is None:
+            criterion = nn.CrossEntropyLoss(label_smoothing=smoothing)
+        else:
+            criterion = nn.CrossEntropyLoss(weight=class_weights.to(device), label_smoothing=smoothing)
 
         for images, labels in tqdm(train_loader):
             images, labels = images.to(device), labels.to(device)
