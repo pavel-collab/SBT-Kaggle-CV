@@ -62,6 +62,8 @@ validation_images_dir = './data/validation/images'
 
 batch_size = 64
 
+num_workers = 4
+
 #TODO: research the meaning of this parameters
 WIDTH = 512
 HEIGHT = 320
@@ -129,8 +131,8 @@ train_dataset = CustomDataset(train_csv_file,
                               classes_list, 
                               train_transform)
 
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=8)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=8)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
     
 if args.resume:
     logfile_path = Path(DEFAULT_LOG_PATH)
