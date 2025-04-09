@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 import re
 
-import logger_config
+import src.logger_config
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +29,52 @@ class TrainModelResult():
         self.train_accuracies = train_accuracies 
         self.val_accuracies = val_accuracies
 
-# Получение метрик качества для текущих весов модели
+def define_random_seed(seed=20):
+    """
+    Set random seeds for reproducibility across different libraries.
+
+    This function sets consistent random seeds for PyTorch CPU operations,
+    CUDA operations, and NumPy to ensure reproducible results across runs.
+    It also configures CUDA backend settings for deterministic behavior.
+
+    Args:
+        seed (int, optional): The random seed value to use for all random number
+                             generators. Defaults to 20.
+    """
+    # фиксируем рандомный сид
+    seed = seed
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = False
+    
+def get_device():
+    # детектируем девайс
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    return device
+
 def evaluate_model(model, dataloader, device):
+    """
+    Evaluates a PyTorch model's performance on a given dataset.
+
+    This function runs the model in evaluation mode on the provided dataloader,
+    collects predictions, and computes various performance metrics including
+    confusion matrix, classification report, accuracy, and weighted F1 score.
+
+    Args:
+        model: The PyTorch model to evaluate.
+        dataloader: DataLoader containing the evaluation dataset.
+        device: The computation device (CPU or GPU) where the model and data should be loaded.
+
+    Returns:
+        tuple: A tuple containing:
+            - cm (numpy.ndarray): Confusion matrix of model predictions.
+            - report (str): Classification report with precision, recall, and F1 score for each class.
+            - accuracy (float): Overall accuracy of the model on the dataset.
+            - weighted_f1 (float): Weighted F1 score across all classes.
+    """
     model.to(device)
     model.eval()
     y_true = []
@@ -49,7 +93,6 @@ def evaluate_model(model, dataloader, device):
     weighted_f1 = f1_score(y_true, y_pred, average='weighted')
     return cm, report, accuracy, weighted_f1
 
-# Функция для построения графика матрицы ошибок
 def plot_confusion_matrix(cm, classes, model_name=None, save_file_path=None):
     with plt.style.context('default'):  
         plt.figure(figsize=(5, 4))
@@ -228,3 +271,11 @@ def last_model_settings(log_file_path: str):
         return last_model_name, last_class_head_name
     else:
         raise RuntimeError("logfile exists, but there are no records about last models training")
+    
+def extract_model_name(model_file_name: str):
+    if 'best_model' in model_file_name:
+        return model_file_name.removeprefix("best_model_").removesuffix(".pth")
+    elif 'last_model' in model_file_name:
+        return model_file_name.removeprefix("last_model_").removesuffix(".pth")
+    else:
+        return None

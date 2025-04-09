@@ -5,36 +5,13 @@ import torch
 import numpy as np
 import pandas as pd
 import torch.nn.functional as F
-
-from dataframe import CustomDataset
-
-import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
-
 from tqdm import tqdm
-
-from model import CustomResNet, CustomResNet50, CustomAlexNet, CustomGoogLeNet, CustomMobileNetV3, CustomResNet101, CustomMobileNetV3Large, CustomConvNeXtTiny, CustomEfficientNetB0
-from classification_head import ClassificationHead1, ClassificationHead2, ClassificationHead3, ClassificationHead4, ClassificationHead5
-
-models = {
-    "resnet": CustomResNet,
-    "resnet50": CustomResNet50,
-    "alexnet": CustomAlexNet,
-    "googlenet": CustomGoogLeNet,
-    "mobilenet_v3": CustomMobileNetV3,
-    "resnet101": CustomResNet101,
-    "mobilenet_large": CustomMobileNetV3Large,
-    "convnexttiny": CustomConvNeXtTiny,
-    "efficientnetb0": CustomEfficientNetB0
-}
-
-classification_heads = {
-    # "head_1": ClassificationHead1,
-    "head_2": ClassificationHead2,
-    "head_3": ClassificationHead3,
-    "head_4": ClassificationHead4,
-    "head_5": ClassificationHead5,
-}
+from utils.utils import extract_model_name
+from utils.constants import (models,
+                             classes_list,
+                             classification_heads,
+                             test_loader,
+                             test_csv_file)
 
 SUBMISSION_FILE_NAME = 'submission.csv'
 SUBMISSION_DIR = 'submissions'
@@ -45,14 +22,6 @@ args = parser.parse_args()
 
 model_path = Path(args.model_path)
 assert(model_path.exists())
-
-def extract_model_name(model_file_name: str):
-    if 'best_model' in model_file_name:
-        return model_file_name.removeprefix("best_model_").removesuffix(".pth")
-    elif 'last_model' in model_file_name:
-        return model_file_name.removeprefix("last_model_").removesuffix(".pth")
-    else:
-        return None
     
 model_file_path = Path(args.model_path)
 assert(model_file_path.exists())
@@ -72,28 +41,6 @@ if not submission_path.exists():
     os.mkdir(submission_path.absolute())
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-test_csv_file = './data/test.csv'
-test_images_dir = './data/images'
-
-classes_list = ['healthy', 'multiple_diseases', 'rust', 'scab']
-batch_size = 64
-
-test_transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # специальные значение нормализации для resnet
-])
-
-test_dataset = CustomDataset(test_csv_file, 
-                             test_images_dir, 
-                             classes_list, 
-                             test_transform, # should be commented to print image
-                             is_test=True)
-
-# Определяем загрузчик данных
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=8)
 
 if head_name is None:
     model = models[model_name](n_classes=len(classes_list))

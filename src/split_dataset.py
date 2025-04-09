@@ -25,9 +25,6 @@ data_root_directory = data_file_path.parent
 df = pd.read_csv(data_file_path.absolute())
 df_train, df_validation = train_test_split(df, test_size=0.3, random_state=42)
 
-# df_train = df_train.reset_index().drop(columns=['index'])
-# df_validation = df_validation.reset_index().drop(columns=['index'])
-
 assert(data_root_directory.is_dir())
 
 os.mkdir(f"{data_root_directory}/train")
