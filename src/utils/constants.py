@@ -48,22 +48,22 @@ class_weights = torch.tensor([0.8654891304347826, 5.137096774193548, 0.728832951
 ''' lists of models and heads of classification '''
 models = {
     "resnet": CustomResNet,
-    # "resnet50": CustomResNet50,
-    # "alexnet": CustomAlexNet,
-    # "googlenet": CustomGoogLeNet,
-    # "mobilenet_v3": CustomMobileNetV3,
-    # "resnet101": CustomResNet101,
-    # "mobilenet_large": CustomMobileNetV3Large,
-    # "convnexttiny": CustomConvNeXtTiny,
-    # "efficientnetb0": CustomEfficientNetB0
+    "resnet50": CustomResNet50,
+    "alexnet": CustomAlexNet,
+    "googlenet": CustomGoogLeNet,
+    "mobilenet_v3": CustomMobileNetV3,
+    "resnet101": CustomResNet101,
+    "mobilenet_large": CustomMobileNetV3Large,
+    "convnexttiny": CustomConvNeXtTiny,
+    "efficientnetb0": CustomEfficientNetB0
 }
 
 classification_heads = {
-    "head_1": ClassificationHead1,
-    # "head_2": ClassificationHead2,
-    # "head_3": ClassificationHead3,
-    # "head_4": ClassificationHead4,
-    # "head_5": ClassificationHead5,
+    # "head_1": ClassificationHead1,
+    "head_2": ClassificationHead2,
+    "head_3": ClassificationHead3,
+    "head_4": ClassificationHead4,
+    "head_5": ClassificationHead5,
 }
 #===========================================================================================================================#
 

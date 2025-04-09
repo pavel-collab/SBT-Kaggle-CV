@@ -8,6 +8,10 @@ for dir in ./saved_models/*; do
         parent_name="${parent_directory##*/}"
         
         filename=$(basename "$model_path")
+        if [[ $filename == *last_model* ]]; then
+            echo "Skip model $filename"
+            continue
+        fi
         model_name=$(echo "$filename" | sed 's/best_model_//; s/.pth//')
 
         echo "Predict on model $model_name with head $parent_name"
