@@ -48,7 +48,7 @@ for dir in ./saved_models/*; do
         model_name=$(echo "$filename" | sed 's/best_model_//; s/.pth//')
 
         echo "Evaluate $model_name with head $parent_name"
-        python3 eval_model.py -m $model_path -o $csv_file
+        python3 ./src/eval_model.py -m $model_path -o $csv_file
     done
 done
 

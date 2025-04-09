@@ -12,8 +12,8 @@ from utils.utils import (train_model,
                          get_device)
 import torch.profiler as profiler
 
-import logger_config
-from logger_config import DEFAULT_LOG_PATH
+import utils.logger_config as logger_config
+from utils.logger_config import DEFAULT_LOG_PATH
 
 from utils.constants import (models,
                              classification_heads,

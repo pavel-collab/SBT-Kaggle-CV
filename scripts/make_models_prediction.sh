@@ -11,6 +11,6 @@ for dir in ./saved_models/*; do
         model_name=$(echo "$filename" | sed 's/best_model_//; s/.pth//')
 
         echo "Predict on model $model_name with head $parent_name"
-        python3 predict.py -m $model_path
+        python3 ./src/predict.py -m $model_path
     done
 done
