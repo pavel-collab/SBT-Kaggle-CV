@@ -109,7 +109,7 @@ if args.resume:
     last_model_name, last_head_name = last_model_settings(logfile_path.absolute())
     logger.info(f"Resume model training from {last_model_name} and {last_head_name}")
 else:
-    last_model_name, last_head_name = models.keys()[0], classification_heads.keys()[0]
+    last_model_name, last_head_name = list(models.keys())[0], list(classification_heads.keys())[0]
 
 try:
     with profiler.profile(
