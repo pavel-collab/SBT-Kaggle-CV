@@ -1,7 +1,7 @@
 import torch
 from models.dataframe import CustomDataset
-import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+import cv2
 
 from models.classification_head import (ClassificationHead1, 
                                         ClassificationHead2, 
@@ -17,6 +17,22 @@ from models.model import (CustomResNet,
                           CustomMobileNetV3Large, 
                           CustomConvNeXtTiny, 
                           CustomEfficientNetB0)
+
+from albumentations.pytorch import ToTensorV2
+from albumentations import (
+    Compose,
+    Resize,
+    OneOf,
+    RandomBrightnessContrast,
+    MotionBlur,
+    MedianBlur,
+    GaussianBlur,
+    VerticalFlip,
+    HorizontalFlip,
+    ShiftScaleRotate,
+    Normalize,
+
+)
 
 #===========================================================================================================================#
 ''' Paths to data test, validate, train '''
@@ -42,6 +58,9 @@ learning_rate = 0.0001
 classes_list = ['healthy', 'multiple_diseases', 'rust', 'scab']
 n_classes = len(classes_list)
 class_weights = torch.tensor([0.8654891304347826, 5.137096774193548, 0.7288329519450801, 0.7825552825552825])
+
+WIDTH = 512
+HEIGHT = 320
 #===========================================================================================================================#
 
 #===========================================================================================================================#
@@ -69,15 +88,23 @@ classification_heads = {
 
 ''' Datasets and dataloaders '''
 #===========================================================================================================================#
-train_transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.RandomRotation(15),
-    transforms.CenterCrop(224),
-    transforms.RandomHorizontalFlip(0.5),  # Добавим вертикальное отражение
-    transforms.RandomVerticalFlip(0.5),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # специальные значение нормализации для resnet
-])
+train_transform = Compose([
+        Resize(height=HEIGHT, width=WIDTH),
+        RandomBrightnessContrast(brightness_limit=(-0.1, 0.1), contrast_limit=(-0.1, 0.1), p=1),
+        OneOf([MotionBlur(blur_limit=3), MedianBlur(blur_limit=3), GaussianBlur(blur_limit=3)], p=0.5),
+        VerticalFlip(p=0.5),
+        HorizontalFlip(p=0.5),
+        ShiftScaleRotate(
+            shift_limit=0.2,
+            scale_limit=0.2,
+            rotate_limit=20,
+            interpolation=cv2.INTER_LINEAR,
+            border_mode=cv2.BORDER_REFLECT_101,
+            p=1,
+        ),
+        Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0),
+        ToTensorV2()
+        ])
 
 train_dataset = CustomDataset(train_csv_file, 
                               train_images_dir, 
@@ -88,12 +115,11 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, nu
 #===========================================================================================================================#
 
 #===========================================================================================================================#
-val_transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # специальные значение нормализации для resnet
-])
+val_transform = Compose([
+                    Resize(height=HEIGHT, width=WIDTH),
+                    Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0),
+                    ToTensorV2()
+                ])
 
 val_dataset = CustomDataset(validation_csv_file, 
                             validation_images_dir, 
@@ -104,12 +130,11 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_w
 #===========================================================================================================================#
 
 #===========================================================================================================================#
-test_transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # специальные значение нормализации для resnet
-])
+test_transform = Compose([
+                    Resize(height=HEIGHT, width=WIDTH),
+                    Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0),
+                    ToTensorV2()
+                ])
 
 test_dataset = CustomDataset(test_csv_file, 
                              test_images_dir, 
