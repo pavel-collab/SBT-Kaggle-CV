@@ -37,14 +37,14 @@ class CustomDataset(Dataset):
             label = int(self.dataframe.iloc[idx,1:].values.argmax()) # Предполагается, что метки закодированы one hot с первой позиции
         
         # Загружаем изображение
-        # image = Image.open(img_name).convert('RGB')
-        img = cv2.imread(img_name)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        image = Image.open(img_name).convert('RGB')
+        # img = cv2.imread(img_name)
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Применяем преобразования, если они есть
         if self.transform:
-            # image = self.transform(image)
-            image = self.transform(image=img)["image"]
+            image = self.transform(image)
+            # image = self.transform(image=img)["image"]
 
         if not self.is_test:
             return (image, label)

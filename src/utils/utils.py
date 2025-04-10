@@ -19,19 +19,6 @@ logger = logging.getLogger(__name__)
 MODEL_SAVE_DIR_PATH = './saved_models'
 IMAGE_DIR_PATH = "./images"
 
-class_freq = [0.288854, 0.04866562, 0.34301413, 0.31946625]
-class_smoothing = (1.0 - class_freq).clamp(min=0.05, max=0.2)
-num_classes = 4
-
-def smooth_one_hot(targets, num_classes, smoothing_per_class):
-    # targets: (batch,)
-    smoothed = torch.zeros((targets.size(0), num_classes), device=targets.device)
-    for i, t in enumerate(targets):
-        smooth = smoothing_per_class[t]
-        smoothed[i].fill_(smooth / (num_classes - 1))
-        smoothed[i, t] = 1.0 - smooth
-    return smoothed
-
 class TrainModelResult():
     def __init__(self, 
                  train_losses: list, 
@@ -178,6 +165,14 @@ def train_model(model,
         running_loss = 0.0 # loss в рамках 1 прохода по датасету (одной эпохи)
         correct = 0
         total = 0
+        
+        # динамическое сглаживание
+        smoothing = 0.2 * (1 - epoch / num_epochs)
+
+        if class_weights is None:
+            criterion = nn.CrossEntropyLoss(label_smoothing=smoothing)
+        else:
+            criterion = nn.CrossEntropyLoss(weight=class_weights.to(device), label_smoothing=smoothing)
 
         for images, labels in tqdm(train_loader):
             images, labels = images.to(device), labels.to(device)
@@ -186,9 +181,7 @@ def train_model(model,
             logits = model(images) # получаем предсказания модели
 
             log_probs = F.log_softmax(logits, dim=1)
-            
-            targets_smoothed = smooth_one_hot(labels, num_classes, class_smoothing)
-            loss = criterion(log_probs, targets_smoothed)
+            loss = criterion(log_probs, labels)
 
             loss.backward() # прогоняем градиенты обратно по графу вычиялений от хвоста сети к голове
             
@@ -197,7 +190,7 @@ def train_model(model,
             optimizer.step() # делаем шаг градиентного спуска (обновляем веса)
             
             running_loss += loss.item()
-            _, predicted = outputs.max(1)
+            _, predicted = logits.max(1)
             total += labels.size(0)
             correct += predicted.eq(labels).sum().item()
         
