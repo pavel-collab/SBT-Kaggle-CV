@@ -145,10 +145,13 @@ def train_model(model,
                 classification_head_name=None,
                 class_weights=None) -> TrainModelResult:
     # Определим функцию потерь и оптимизатор
+    criterion = nn.BCEWithLogitsLoss()
+    '''
     if class_weights is None:
         criterion = nn.CrossEntropyLoss()
     else:
         criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
+    '''
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=3, factor=0.5)
 
@@ -173,8 +176,11 @@ def train_model(model,
 
             optimizer.zero_grad() # зануляем градиенты перед обработкой очередного батча
             outputs = model(images) # получаем предсказания модели
+            
+            one_hot_targets = torch.nn.functional.one_hot(labels, num_classes=4).float()
+            out_class_props = torch.sigmoid(outputs)
 
-            loss = criterion(outputs, labels) # получаем выход функции потерь
+            loss = criterion(out_class_props, one_hot_targets) # получаем выход функции потерь
             loss.backward() # прогоняем градиенты обратно по графу вычиялений от хвоста сети к голове
             
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) #! добавить клипинк для предотвращения взрыва градиентов
@@ -202,7 +208,11 @@ def train_model(model,
             for images, labels in tqdm(val_loader):
                 images, labels = images.to(device), labels.to(device)
                 outputs = model(images)
-                loss = criterion(outputs, labels)
+                
+                one_hot_targets = torch.nn.functional.one_hot(labels, num_classes=4).float()
+                out_class_props = torch.sigmoid(outputs)
+
+                loss = criterion(out_class_props, one_hot_targets)
                 
                 val_loss += loss.item()
                 _, predicted = outputs.max(1)
