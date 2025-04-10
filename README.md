@@ -86,3 +86,9 @@ model_evaluation_result.csv имена моделей и их финальные
 ```
 kaggle competitions submit -c plant-pathology-2020-fgvc7 -f submission.csv -m "Message"
 ```
+
+## For developers
+
+```
+python3 ./third-party/compare.py -d ./submissions/ -e ./tmp/submission.csv
+```
