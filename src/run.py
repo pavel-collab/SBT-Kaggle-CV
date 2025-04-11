@@ -47,8 +47,8 @@ try:
     activities=[profiler.ProfilerActivity.CPU, profiler.ProfilerActivity.CUDA],
     on_trace_ready=torch.profiler.tensorboard_trace_handler('./logs/profiler'),
     ) as prof:
-        for model_name, model_class in dropwhile(lambda item: item[0] < last_model_name, models.items()):
-            for class_head_name, cl_head in dropwhile(lambda item: item[0] < last_head_name, classification_heads.items()):
+        for model_name, model_class in dropwhile(lambda item: item[0] != last_model_name, models.items()):
+            for class_head_name, cl_head in dropwhile(lambda item: item[0] != last_head_name, classification_heads.items()):
                 logger.info(f"Start to train model {model_name} with classification head {class_head_name}")
                 model = model_class(classification_head=cl_head, n_classes=n_classes)
                 try:
